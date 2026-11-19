@@ -7,6 +7,18 @@
 
 把 [dsh-pocket](https://github.com/shaobeichen/dsh-pocket)（手机访问）搬进 **dsh-go 手机 App 的原生界面**。
 
+> [!IMPORTANT]
+> **还没进插件市场，需要手动装。** 市场只接受 npm 上架的包，而这个包暂时没发到 npm，所以 App 的插件市场里搜不到它。手动安装只有两步，见下面「装」一节。装完记得重启引擎，否则界面上不会出现。
+
+## 三十秒装完
+
+```sh
+git clone https://github.com/schvinkk/dsh-go-pocket.git
+cd dsh-go-pocket && node bin/install.mjs
+```
+
+然后在 App 的「引擎」页点一次重启。完成。
+
 以前想看局域网二维码、开公网、换访问密码，得切到网页版「设置 → 手机访问」。装上这个插件后，这些都在手机上：输入框上方一条状态条，点开就是二维码、地址、密码和开关。
 
 > 这是 dsh-go 的**原生插件**（装在 `$DSH_HOME/dsh-go/plugins/`），不是 Harness 网页插件（Cordis bundle）。它复用 dsh-pocket 自己的控制接口，不另存第二份配置。
