@@ -1,38 +1,47 @@
 # dsh-go-pocket
 
-[dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (phone access) inside the **dsh-go phone app's native UI**.
+[![check](https://github.com/schvinkk/dsh-go-pocket/actions/workflows/check.yml/badge.svg)](https://github.com/schvinkk/dsh-go-pocket/actions/workflows/check.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![dsh-go](https://img.shields.io/badge/dsh--go-%E2%89%A51.2.0-6E56CF.svg)](https://github.com/ccch1mneyyy/dsh-go-market)
+[![upstream](https://img.shields.io/badge/upstream-dsh--pocket-informational.svg)](https://github.com/shaobeichen/dsh-pocket)
 
-Opening a public tunnel, scanning the LAN QR code or rotating an access PIN used to mean switching to the web settings page. With this plugin it all lives in the app: one status strip above the composer, one panel with QR codes, addresses, PINs and switches.
+Brings [dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (phone access) into the **dsh-go native phone UI**.
 
-> This is a dsh-go **native plugin** (`$DSH_HOME/dsh-go/plugins/`), not a Harness web plugin (Cordis bundle). It drives dsh-pocket's own control endpoints and keeps no second copy of the configuration.
+Before: to see the LAN QR code, open the public tunnel or change the access PIN, you had to switch to the web client's *Settings → Phone access*. Now it is all on the phone: a status strip above the composer, and a panel with the QR codes, URLs, PINs and switches.
+
+> This is a dsh-go **native plugin** (installed under `$DSH_HOME/dsh-go/plugins/`), not a Harness web plugin (Cordis bundle). It drives dsh-pocket's own control endpoints and keeps no second copy of the configuration.
 
 ## What it is built on
 
-**Upstream: dsh-pocket** — https://github.com/shaobeichen/dsh-pocket by shaobeichen, **GPL-2.0**.
+**Upstream: [dsh-pocket](https://github.com/shaobeichen/dsh-pocket)** by shaobeichen, **GPL-2.0**.
 
-The LAN/public QR codes, access PINs, cloudflared tunnel, readiness self-heal and the proxy layer all come from upstream. This plugin is an **adapter**: it shows and drives that same state from the dsh-go native UI.
+The LAN/public QR codes, access PINs, cloudflared tunnel, readiness self-heal and the proxy layer all come from upstream. This plugin is an **adapter**: it shows that same state in the dsh-go native UI and lets you drive it.
 
-- It contains **no upstream source code** — it only calls `POST /dsh-pocket/<endpoint>`;
-- **dsh-pocket must be installed separately** (`dsh plugin --profile web add dsh-pocket`); this plugin is a remote control, not a replacement;
-- This plugin itself is MIT; merging upstream code into this repository makes the whole package GPL-2.0. See [NOTICE.md](NOTICE.md).
+- It contains **no upstream source code** — it only calls `POST /dsh-pocket/<endpoint>`
+- **dsh-pocket must be installed and enabled separately**; this plugin is a remote control, not a replacement
+- This plugin itself is MIT; merging upstream code into this repository makes the whole package GPL-2.0. See [NOTICE.md](NOTICE.md)
 
 ## Before you install
 
-- dsh-go app 1.2.0 or newer (native plugin bridge v1)
-- `dsh-pocket` installed and enabled on the same machine
-- the engine running on `127.0.0.1`
+| Needs | Detail |
+| --- | --- |
+| dsh-go app | ≥ 1.2.0 (native plugins use bridge protocol v1) |
+| dsh-pocket | installed and enabled on the same machine |
+| Engine | running on `127.0.0.1` |
 
 ## Install
 
 ```sh
-npx dsh-go-pocket
-# or from a source checkout
-node bin/install.mjs --dir /path/to/dsh-go-pocket
+git clone https://github.com/schvinkk/dsh-go-pocket.git
+cd dsh-go-pocket
+node bin/install.mjs
 ```
 
-The installer registers the profile dependency, adds the plugin to `dsh.profile.bundles`, and appends a plain insert to the profile's `cordis.patch.yml` so the engine mounts it without a restart.
+The installer registers the profile dependency, adds the plugin to `dsh.profile.bundles`, and appends a plain insert to the profile's `cordis.patch.yml`.
 
-Manual equivalent:
+**Restart the engine once from the app's Engine page afterwards.** Native plugins read their manifest at engine startup, so until you restart it stays invisible — that is not a broken plugin.
+
+Equivalent manual steps:
 
 ```sh
 P="$DSH_HOME/dsh-go/plugins/dsh-go-pocket"
@@ -43,23 +52,39 @@ dsh plugin --profile web add "$P"
 #       name: dsh-go-pocket
 ```
 
+After that, in dsh-go:
+
+- a status strip above the composer reads *Phone access · LAN + public*; tap it for the main panel
+- three panels under the session's Plugins tab / All features
+- two composer chips: *LAN PIN* and *Public PIN*
+
 ## What you get
 
-- **Status strip** above the composer: LAN / public / neither, in one line.
-- **Phone access panel**: proxy, LAN and public metrics; LAN QR code, address and PIN; public QR code, URL, PIN and tunnel mode; copy buttons; open/close public access behind a confirm.
-- **Access PIN panel**: both PINs, whether each is fixed, rotate the LAN PIN, copy either.
-- **Tunnel & more**: tunnel mode, readiness self-heal state, mobile right bar, engine port, restart engine, factory reset (both confirmed).
-- **Composer actions**: turn whatever you typed into a fixed PIN (8–64 letters or digits).
+**Status strip** — one line telling you whether the phone can reach the engine (LAN / public / neither).
+
+**Main panel**
+
+- three metrics: local proxy, LAN access, public
+- LAN QR code + URL + PIN, copy link / copy PIN in one tap
+- public QR code + URL + PIN + tunnel mode, copy in one tap
+- open / close the public tunnel with a confirmation, same disclaimer gate as the web client
+- jump to *Tunnel & more*
+
+**Access PIN panel** — both PINs, whether a fixed PIN is in use, rotate the LAN PIN, copy.
+
+**Tunnel & more** — tunnel mode, self-heal state, mobile right-bar switch, engine port, restart engine, factory reset (all confirmed).
+
+**Composer chips** — turn whatever is in the composer into a fixed PIN (8–64 alphanumerics). The most convenient way to change it on a phone: type it, then tap.
 
 ## How it connects
 
-dsh-pocket mounts its control surface on the engine's own web server: `POST /dsh-pocket/<endpoint>`, guarded by loopback plus the engine session cookie. This plugin runs in the same process, so it
+dsh-pocket mounts its control endpoints on the engine's own web server: `POST /dsh-pocket/<endpoint>`, gated by loopback plus the engine session cookie. This plugin runs in the same process, so it degrades in three steps:
 
-1. asks `connection.authenticatedUrl()` for the launch-token URL and exchanges it for a `dsh-auth-*` cookie on loopback;
-2. falls back to dsh-pocket's proxy port with the LAN PIN;
-3. falls back to read-only: it reads the state files under `$DSH_HOME/dsh-pocket/` and every mutating button says so.
+1. `connection.authenticatedUrl()` gives a launch-token URL; one local `GET` trades it for the `dsh-auth-*` cookie
+2. failing that, go through dsh-pocket's proxy port and trade the LAN PIN for a cookie
+3. failing both, fall back to **read-only**: read state files under `$DSH_HOME/dsh-pocket/`. The panel still shows QR codes, URLs and PINs, but mutating buttons say plainly that changes are unavailable
 
-No PIN files are copied, no endpoint is faked, no configuration is duplicated.
+No copied PIN files, no fake endpoints, no cached config. The state always matches the web client, because it reads the same source.
 
 ## Uninstall
 
@@ -68,16 +93,29 @@ dsh plugin --profile web remove dsh-go-pocket
 rm -rf "$DSH_HOME/dsh-go/plugins/dsh-go-pocket"
 ```
 
-Then drop the insert from `cordis.patch.yml` (the installer leaves a `cordis.patch.yml.bak-dsh-go-pocket-*` backup).
+Then drop the insert from `cordis.patch.yml` (the installer leaves a backup at `cordis.patch.yml.bak-dsh-go-pocket-*`).
 
 ## Development
 
 ```sh
-node "$DSH_HOME/skills/dsh-go-plugin/kit/bin/check.mjs" . --load --lang zh
+npm test                                                    # 12 unit tests
+node "$DSH_HOME/skills/dsh-go-plugin/kit/bin/check.mjs" . --load --lang zh --app 1.2.0
 ```
 
-`lib/` changes need an engine restart from the app's Engine page; `package.json` manifest edits are re-read automatically.
+`check.mjs` ships with the dsh-go app's dsh-go-plugin skill; exit code 0 means it passes. Changes under `lib/` need an engine restart.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Security
+
+The plugin shows your LAN URL, public URL and access PIN on screen. Opening the public tunnel exposes an engine that can execute code to the internet — use a strong PIN and close it when you are done. **Redact URLs, PINs and QR codes in any screenshot before filing an issue.**
+
+See [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT. dsh-pocket itself is GPL-2.0; this plugin contains none of its code and only calls its HTTP endpoints.
+MIT, see [LICENSE](LICENSE). Upstream dsh-pocket is GPL-2.0; this plugin contains none of its code and only calls its HTTP endpoints.
+
+---
+
+中文: [README.md](README.md)
