@@ -1,0 +1,144 @@
+{
+  "name": "dsh-go-pocket",
+  "version": "0.1.0",
+  "description": "Dsh-pocket for the dsh-go native UI: LAN/public QR codes, access PINs, tunnel switches and engine restart — without switching to the web settings page.",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "bin",
+    "test",
+    "cordis.patch.yml",
+    "README.md",
+    "README.en.md",
+    "NOTICE.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-go",
+    "dsh-pocket",
+    "deepseek-harness",
+    "native-plugin",
+    "remote",
+    "qr",
+    "tunnel",
+    "phone"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/schvinkk/dsh-go-pocket.git"
+  },
+  "homepage": "https://github.com/schvinkk/dsh-go-pocket#readme",
+  "bugs": {
+    "url": "https://github.com/schvinkk/dsh-go-pocket/issues"
+  },
+  "engines": {
+    "node": ">=22.19",
+    "dsh": ">=0.2.1-rc.2 <0.3.0-0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dshGo": {
+    "v": 1,
+    "title": {
+      "zh": "手机访问",
+      "en": "Phone access"
+    },
+    "icon": "phone",
+    "wants": [
+      "draft"
+    ],
+    "minApp": "1.2.0",
+    "contributes": {
+      "composer.strip": [
+        {
+          "id": "pocket",
+          "icon": "phone",
+          "text": "手机访问",
+          "panel": "main"
+        }
+      ],
+      "composer.actions": [
+        {
+          "id": "set-lan-pin",
+          "label": {
+            "zh": "设局域网密码",
+            "en": "LAN PIN"
+          },
+          "icon": "link"
+        },
+        {
+          "id": "set-public-pin",
+          "label": {
+            "zh": "设公网密码",
+            "en": "Public PIN"
+          },
+          "icon": "globe"
+        }
+      ],
+      "panels": [
+        {
+          "id": "main",
+          "title": {
+            "zh": "手机访问",
+            "en": "Phone access"
+          },
+          "icon": "phone",
+          "placement": [
+            "session.tab",
+            "features",
+            "chat.panel"
+          ],
+          "presentation": "page"
+        },
+        {
+          "id": "pin",
+          "title": {
+            "zh": "访问密码",
+            "en": "Access PIN"
+          },
+          "icon": "qr",
+          "placement": [
+            "session.tab",
+            "features"
+          ],
+          "presentation": "page"
+        },
+        {
+          "id": "more",
+          "title": {
+            "zh": "隧道与更多",
+            "en": "Tunnel & more"
+          },
+          "icon": "settings",
+          "placement": [
+            "session.tab",
+            "features"
+          ],
+          "presentation": "page"
+        }
+      ]
+    }
+  },
+  "author": {
+    "name": "schvinkk"
+  },
+  "bin": {
+    "dsh-go-pocket": "bin/install.mjs"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "check": "node \"${DSH_HOME:-$HOME/.dsh}/skills/dsh-go-plugin/kit/bin/check.mjs\" . --load --lang zh"
+  }
+}

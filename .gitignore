@@ -1,0 +1,3 @@
+node_modules/
+*.tgz
+cordis.patch.yml.bak-*

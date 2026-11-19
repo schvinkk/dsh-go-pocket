@@ -1,0 +1,4 @@
+# id: 任意唯一 id；name: 必须等于 package.json 的 name
+- insert:
+    - id: dsh-go-pocket
+      name: dsh-go-pocket
