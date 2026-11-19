@@ -7,6 +7,18 @@
 
 Brings [dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (phone access) into the **dsh-go native phone UI**.
 
+> [!IMPORTANT]
+> **Not in the plugin market yet — install it manually.** The market only accepts packages published to npm, and this one is not there yet, so it will not show up in the app's plugin market. Manual install is two steps, see *Install* below. Restart the engine afterwards or nothing appears.
+
+## Install in thirty seconds
+
+```sh
+git clone https://github.com/schvinkk/dsh-go-pocket.git
+cd dsh-go-pocket && node bin/install.mjs
+```
+
+Then tap Restart once on the app's Engine page. Done.
+
 Before: to see the LAN QR code, open the public tunnel or change the access PIN, you had to switch to the web client's *Settings → Phone access*. Now it is all on the phone: a status strip above the composer, and a panel with the QR codes, URLs, PINs and switches.
 
 > This is a dsh-go **native plugin** (installed under `$DSH_HOME/dsh-go/plugins/`), not a Harness web plugin (Cordis bundle). It drives dsh-pocket's own control endpoints and keeps no second copy of the configuration.
