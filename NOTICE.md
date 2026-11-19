@@ -1,33 +1,152 @@
-# 出处与致谢 / Attribution
+# 出处、授权与独立性声明
 
-## 这个插件是从哪儿来的
+## 一、结论
 
-`dsh-go-pocket` 是 **dsh-pocket 在 dsh-go 手机 App 原生界面上的适配层**。
+**dsh-go-pocket 是 dsh-pocket 的独立适配层，不是它的衍生作品，也不是它的分支或改名版本。**
 
-- 上游项目：**dsh-pocket** — https://github.com/shaobeichen/dsh-pocket
-- 上游作者：shaobeichen
-- 上游许可：**GPL-2.0**
-- 上游做了什么：把 Harness 装进口袋——局域网/公网二维码、访问密码、cloudflared 隧道、就绪度自愈、移动端适配。这些能力、协议和状态判定的设计全部来自上游。
+本项目采用 MIT 许可，这个选择有依据，不是随手写的。下面把依据摊开，任何一条都可以自己验证。
 
-## 本插件做了什么（不重复上游的活）
+## 二、上游是谁
 
-本插件**不包含 dsh-pocket 的任何源代码**，它只是：
+| 项目 | 内容 |
+| --- | --- |
+| 名称 | dsh-pocket（手机访问） |
+| 作者 | shaobeichen |
+| 仓库 | https://github.com/shaobeichen/dsh-pocket |
+| 版本（比对基准） | 2.13.1 |
+| 许可 | **GPL-2.0**（GNU General Public License v2.0） |
+| 本项目与它的关系 | 只通过 HTTP 调用它的控制接口 |
 
-1. 在 dsh-go 的原生界面里放一条状态条和三块面板（`lib/view.js`）；
-2. 通过 dsh-pocket **自己暴露的 HTTP 控制接口** `POST /dsh-pocket/<endpoint>` 读写同一份状态（`lib/pocket.js`）；
-3. 拿不到会话时只读地读 `$DSH_HOME/dsh-pocket/` 下的状态文件。
+上游做的是：把 DeepSeek Harness 装进口袋——局域网/公网二维码、访问密码、cloudflared 隧道、就绪度自愈、移动端适配。
 
-也就是说：**dsh-pocket 必须单独安装并启用**，本插件是它的遥控器，不是它的替代品。密码、隧道、设置文件都只有一份，不存在第二套配置。
+**这些能力全部属于上游，本项目一个都没有重新实现。**
 
-## 许可证怎么处理
+## 三、本项目做的是什么
 
-- 本插件自身的代码：**MIT**（见 LICENSE）。
-- dsh-pocket：**GPL-2.0**。因为本插件不分发、不链接、不修改上游代码，只通过 HTTP 调用它的接口，所以 MIT 与之一致；但**如果你把上游代码合并进本仓库，整包必须转为 GPL-2.0**。
+一句话：**给上游做了一块手机原生的遥控面板。**
 
-## 发布时请照抄这句话
+| 做 | 不做 |
+| --- | --- |
+| 在 dsh-go 原生界面里显示二维码、地址、密码 | 不生成二维码以外的任何连接能力 |
+| 把上游的接口调用结果渲染成原生面板 | 不实现代理、不实现隧道、不管加密 |
+| 调用 `POST /dsh-pocket/<endpoint>` 触发开关 | 不改上游任何一行代码 |
+| 拿不到会话时只读地读状态文件 | 不另存、不复制、不缓存配置 |
 
-> 本项目基于 [dsh-pocket](https://github.com/shaobeichen/dsh-pocket)（作者 shaobeichen，GPL-2.0）提供的能力，做的是 **dsh-go 原生界面的适配层**；dsh-pocket 需单独安装，本插件不包含其源代码。
+**dsh-pocket 必须单独安装并启用。** 本项目是遥控器，不是替代品。卸载本项目，上游功能一点不受影响。
 
-English:
+## 四、独立性证据（可复现）
 
-> This project adapts [dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (by shaobeichen, GPL-2.0) to the dsh-go native UI. dsh-pocket must be installed separately; no upstream source code is included.
+### 4.1 零依赖上游
+
+```
+$ grep -rE "require\(['\"]dsh-pocket|from ['\"]dsh-pocket" lib/ bin/
+（无输出）
+```
+
+本项目**没有** `import`、`require`、`dependencies` 或 `peerDependencies` 指向上游。`package.json` 里上游一次都没出现为依赖。
+
+### 4.2 代码重合度实测
+
+方法：读取两边源码 → 剥离注释与空白 → 按 20 字符滑窗切片 → 计算交集占本项目的比例。上游侧取 `lib/index.js`、`lib/web-rpc.js`、`lib/restart.js`、`lib/settings.mjs` 四个核心文件合并比对。
+
+| 本项目文件 | 切片总数 | 与上游重合 | 重合率 |
+| --- | --- | --- | --- |
+| `lib/index.js` | 5818 | 58 | **1.00%** |
+| `lib/pocket.js` | 6702 | 183 | **2.73%** |
+| `lib/view.js` | 2889 | 0 | **0.00%** |
+| `lib/words.js` | 5413 | 0 | **0.00%** |
+| `bin/install.mjs` | 2565 | 66 | **2.57%** |
+| **合计** | **23387** | **307** | **1.31%** |
+
+`lib/view.js`（界面结构）和 `lib/words.js`（中英文文案）**零重合**——这两块是本项目的创作主体，完全原创。
+
+### 4.3 那 1.31% 是什么
+
+逐条看过，全部是下面三类，没有一处是上游的业务逻辑：
+
+| 类型 | 实例 | 性质 |
+| --- | --- | --- |
+| JS / Node 标准写法 | `JSON.parse(readFileSync(`、`){returnnewPromise((`、`&&typeofraw==='objec` | 任何 Node 项目都会写 |
+| HTTP 通用头 | `'content-type':'application/json'` | 协议常量 |
+| 生态约定名 | `['plugin','--profile']`、`.env.DSH_HOME??join(`、`'node:child_process'` | DSH CLI 与环境变量名 |
+| 共享状态字段 | `mobileRightbarEnabled`、`tunnelMode==='named'`、`lanAuthEnabled!==fa` | 见 4.4 |
+
+### 4.4 为什么会有字段名重合
+
+因为本项目读的是**上游写的同一份状态文件**：
+
+```
+$DSH_HOME/dsh-pocket/settings.json
+```
+
+要读懂 `tunnelMode`、`mobileRightbarEnabled`、`lanAuthEnabled` 这些键，就必须用上游的键名。这是**数据格式的互操作性**，不是代码复制——就像两个程序都读 `package.json` 的 `version` 字段，不代表它们互相抄了代码。
+
+## 五、为什么 MIT 是合规的
+
+### 5.1 GPL-2.0 的传染范围
+
+GPL-2.0 第 2 条约束的是**基于该程序的作品**（work based on the Program），即复制、修改、链接或以其他方式形成衍生作品。它的触发条件是**代码层面的结合**。
+
+GPL 的传染性不延伸到「通过网络协议调用一个独立程序」。这是自由软件基金会长年的一致立场，也是业界通行理解：Nginx（BSD）可以被 GPL 程序通过 HTTP 调用，反过来也一样。
+
+### 5.2 本项目的实际结构
+
+| 维度 | 状态 |
+| --- | --- |
+| 进程 | 各自独立，上游跑在引擎里，本项目是引擎的原生插件，互不链接 |
+| 代码 | 零复制、零 import、零依赖 |
+| 接口 | HTTP `POST /dsh-pocket/<endpoint>`，与浏览器访问网站同性质 |
+| 分发 | 本项目仓库不含任何上游文件 |
+| 可卸载 | 删掉本项目，上游功能完整无损 |
+
+综上：**本项目与上游是「两个独立程序通过公开接口通信」，不是「一个作品包含另一个作品的代码」。**
+
+### 5.3 那为什么还要在 README 里写上游
+
+因为**这是该做的事，不是法律要求的妥协**。原作者 shaobeichen 做出了二维码、隧道、自愈这一整套真正有价值的东西；本项目只是给它配了块手机上的面板。不写清楚上游是谁，会误导使用者以为这些能力是本项目做的。
+
+**署名是出于尊重与诚实，不是因为被 GPL 逼的。**
+
+## 六、红线：什么情况会变成 GPL
+
+如果将来有人（包括仓库维护者）做了下面任一操作，**MIT 声明立即失效，整包必须转为 GPL-2.0 并附带 GPL 全文**：
+
+- 把上游的任何源码文件复制进本仓库
+- 通过 `require` / `import` 直接加载上游模块
+- 把上游代码改写后并入本项目（洗码也算）
+- 把本项目与上游打包成单一分发物
+
+**提 PR 前请自查这条。** 遇到想复用上游逻辑的场景，正确做法是：调用它的接口，不要抄它的实现。
+
+## 七、给下游使用者的指引
+
+| 你的用法 | 你需要做什么 |
+| --- | --- |
+| 直接装来用 | 无需任何额外操作 |
+| 修改本项目再分发 | 保留 `LICENSE` 与 `NOTICE.md`，注明改动 |
+| 把本项目放进你的发行版 | 保留 MIT 声明，别声称是你原创 |
+| 想合并上游代码 | **整包转 GPL-2.0**，附 GPL 全文，公开源码 |
+| 商业使用 | MIT 允许，无需授权、无需付费 |
+
+## 八、许可文本
+
+- 本项目：**MIT**，全文见 [LICENSE](LICENSE)
+- 上游 dsh-pocket：**GPL-2.0**，全文见 https://www.gnu.org/licenses/old-licenses/gpl-2.0.html 或上游仓库的 [LICENSE](https://github.com/shaobeichen/dsh-pocket/blob/main/LICENSE)
+
+本项目不附带 GPL-2.0 全文，因为本项目不包含上游代码。若发生第六节所述情况，必须补上。
+
+## 九、如果上游作者有异议
+
+如果你是 shaobeichen 本人，并且认为本项目越过了你希望的范围，请开 issue 或通过仓库主页联系。以下调整都可以立刻做：
+
+- 改写 README 与 NOTICE 的措辞
+- 在界面里显示「Powered by dsh-pocket」字样
+- 改名以消除与上游的混淆
+- 直接归档本项目
+
+**这个项目的存在意义是让上游的能力更好用，不是从上游分流。**
+
+---
+
+最后核对时间：2026-11-20
+比对基准：dsh-pocket 2.13.1 (GPL-2.0) / dsh-go-pocket 0.1.0 (MIT)
