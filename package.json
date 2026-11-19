@@ -19,7 +19,9 @@
     "README.en.md",
     "NOTICE.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md"
   ],
   "keywords": [
     "dsh",

@@ -1,0 +1,42 @@
+name: 报告问题
+description: 面板不显示、连不上、按钮没反应
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        先确认两件事：`dsh-pocket` 已安装并启用；装完插件后重启过引擎。
+        不提重启这件事，十次有八次是这个原因。
+  - type: input
+    id: plugin-version
+    attributes:
+      label: 插件版本
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 环境
+      description: dsh-go App 版本、引擎版本、手机型号
+      placeholder: dsh-go 1.2.0 / dsh 0.2.2-rc.1 / Android 14
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 发生了什么
+      description: 说清在哪一步、看到什么。有截图更好。
+    validations:
+      required: true
+  - type: dropdown
+    id: ro
+    attributes:
+      label: 面板是不是只读
+      description: 面板底部如果出现「只能看不能改」，说明没拿到会话，落到了只读模式
+      options:
+        - 不是，按钮能用
+        - 是，只能看不能改
+        - 面板压根没出现
+    validations:
+      required: true
