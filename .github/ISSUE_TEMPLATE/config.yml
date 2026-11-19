@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: dsh-pocket（上游）
+    url: https://github.com/shaobeichen/dsh-pocket/issues
+    about: 二维码、密码、隧道本身的问题请提到上游
