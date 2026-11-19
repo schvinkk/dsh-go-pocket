@@ -23,15 +23,30 @@ cd dsh-go-pocket && node bin/install.mjs
 
 > 这是 dsh-go 的**原生插件**（装在 `$DSH_HOME/dsh-go/plugins/`），不是 Harness 网页插件（Cordis bundle）。它复用 dsh-pocket 自己的控制接口，不另存第二份配置。
 
-## 它是基于什么做的
+## 它和上游是什么关系
 
-**上游：[dsh-pocket](https://github.com/shaobeichen/dsh-pocket)** — 作者 shaobeichen，许可 **GPL-2.0**。
+**上游：[dsh-pocket](https://github.com/shaobeichen/dsh-pocket)** — 作者 shaobeichen，许可 **GPL-2.0**，3000+ stars。局域网/公网二维码、访问密码、cloudflared 隧道、就绪度自愈、代理层，这些能力**全部属于上游**，本项目一个都没重新实现。
 
-局域网/公网二维码、访问密码、cloudflared 隧道、就绪度自愈、代理层，这些能力全部来自上游。本插件是它的**适配层**：把同一份状态显示在 dsh-go 的原生界面里，并让你能直接操作。
+本项目做的事只有一件：**给上游配一块手机上的遥控面板。**
 
-- 本插件**不包含上游源代码**，只调用它暴露的 `POST /dsh-pocket/<endpoint>` 控制接口
-- **dsh-pocket 必须单独安装并启用**（网页版设置里的「手机访问」），本插件是遥控器，不是替代品
-- 本插件自身用 MIT；如果把上游代码合并进本仓库，整包必须转为 GPL-2.0。详见 [NOTICE.md](NOTICE.md)
+| | 上游 dsh-pocket | 本项目 dsh-go-pocket |
+| --- | --- | --- |
+| 干什么 | 真正实现手机访问 | 在原生界面里显示和操作它 |
+| 装在哪 | 网页插件的 profile | `$DSH_HOME/dsh-go/plugins/` |
+| 必须装吗 | **必须**，不装本项目没有意义 | 可选，装了更好用 |
+| 代码关系 | — | 零复制、零 import、零依赖 |
+| 通信方式 | — | HTTP `POST /dsh-pocket/<endpoint>` |
+| 许可 | GPL-2.0 | MIT |
+
+**三个关键点：**
+
+1. **dsh-pocket 必须单独安装并启用**（网页版设置里的「手机访问」）。本项目是遥控器，不是替代品；删掉本项目，上游功能一点不受影响。
+2. **本项目不含上游任何源代码。** 代码重合度实测 1.31%，且 `lib/view.js`、`lib/words.js` 零重合——重合的部分全是 `JSON.parse`、`content-type` 这类通用写法，以及为了读懂同一份 `settings.json` 必须共用的字段名。
+3. **为什么能用 MIT：** 只通过 HTTP 调用独立程序不构成 GPL 意义上的衍生作品。但如果将来有人把上游代码复制进来，**整包必须转为 GPL-2.0**。这条红线写进了 [NOTICE.md](NOTICE.md)。
+
+> 署名上游是出于尊重与诚实，不是因为被 GPL 逼的。二维码、隧道、自愈这一整套有价值的东西是 shaobeichen 做的，本项目只是给它加了块面板。
+
+完整的授权依据、重合度实测数据、下游使用指引，见 **[NOTICE.md](NOTICE.md)**。
 
 ## 装之前
 
@@ -126,7 +141,12 @@ node "$DSH_HOME/skills/dsh-go-plugin/kit/bin/check.mjs" . --load --lang zh --app
 
 ## 许可
 
-MIT，见 [LICENSE](LICENSE)。上游 dsh-pocket 是 GPL-2.0，本插件不包含它的代码，只通过 HTTP 调它的接口。
+| 对象 | 许可 | 说明 |
+| --- | --- | --- |
+| 本项目 dsh-go-pocket | **MIT** | 见 [LICENSE](LICENSE)。可商用、可修改、可再分发，保留声明即可 |
+| 上游 dsh-pocket | **GPL-2.0** | 本项目不包含其代码，故不需要转 GPL，也不附带 GPL 全文 |
+
+**唯一红线**：如果把上游代码复制进本仓库，整包必须转为 GPL-2.0。依据与实测数据见 [NOTICE.md](NOTICE.md)。
 
 ---
 
