@@ -1,6 +1,6 @@
 {
   "name": "dsh-go-pocket",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dsh-pocket for the dsh-go native UI: LAN/public QR codes, access PINs, tunnel switches and engine restart — without switching to the web settings page.",
   "license": "MIT",
   "type": "module",

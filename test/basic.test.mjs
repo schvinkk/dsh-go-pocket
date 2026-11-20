@@ -127,3 +127,11 @@ test('没有会话时不抛错，只返回失败结果', async () => {
   assert.equal(r.ok, false)
   assert.equal(typeof r.error, 'string')
 })
+// 补丁脚本：上游 isProtectedHost 的 loopback 免密修复（见 bin/patch-loopback-noauth.mjs）
+test('loopback 补丁脚本可被 node 解析且导出正确的匹配串', async () => {
+  const { readFileSync } = await import('node:fs')
+  const src = readFileSync(new URL('../bin/patch-loopback-noauth.mjs', import.meta.url), 'utf8')
+  assert.ok(src.includes('dsh-pocket-loopback-noauth'), '补丁标记缺失')
+  assert.ok(src.includes("classifyHost(host) === 'loopback') return false"), '未包含 loopback 免密分支')
+  assert.ok(src.includes('--revert') && src.includes('--check'), '缺少 check/revert 模式')
+})

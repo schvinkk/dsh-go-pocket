@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.1 — 2026-11-20
+
+### 新增
+
+- `bin/patch-loopback-noauth.mjs`：修上游 dsh-pocket 的 loopback 误鉴权问题。
+  dsh-pocket 的登录 cookie 绑定进程级 `sessionKey`，每次 `dsh web` 启动都会重新
+  随机生成，所以引擎一重启（装/卸插件、更新、App 冷启动）浏览器里的旧 cookie
+  全部失配，本机所有 `/api` 与 WebSocket 回 401，网页端插件集体打不开。
+  脚本让 loopback 永远免密（局域网仍按设置页开关、公网仍强制密码），支持
+  `--check` / `--revert`，幂等、可重复执行。
+
+### 修复
+
+- 文档补充上述 401 灰屏问题的成因与排查步骤
+
 ## 0.1.0 — 2026-11-20
 
 首个版本。

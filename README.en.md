@@ -7,19 +7,46 @@
 
 Brings [dsh-pocket](https://github.com/shaobeichen/dsh-pocket) (phone access) into the **dsh-go native phone UI**.
 
+> [!IMPORTANT]
+> **Not in the plugin market yet — install it manually.** The market only accepts packages published to npm, and this one is not there yet, so it will not show up in the app's plugin market. Manual install is two steps, see *Install* below. Restart the engine afterwards or nothing appears.
+
+## Install in thirty seconds
+
+```sh
+git clone https://github.com/schvinkk/dsh-go-pocket.git
+cd dsh-go-pocket && node bin/install.mjs
+```
+
+Then tap Restart once on the app's Engine page. Done.
+
 Before: to see the LAN QR code, open the public tunnel or change the access PIN, you had to switch to the web client's *Settings → Phone access*. Now it is all on the phone: a status strip above the composer, and a panel with the QR codes, URLs, PINs and switches.
 
 > This is a dsh-go **native plugin** (installed under `$DSH_HOME/dsh-go/plugins/`), not a Harness web plugin (Cordis bundle). It drives dsh-pocket's own control endpoints and keeps no second copy of the configuration.
 
-## What it is built on
+## How it relates to upstream
 
-**Upstream: [dsh-pocket](https://github.com/shaobeichen/dsh-pocket)** by shaobeichen, **GPL-2.0**.
+**Upstream: [dsh-pocket](https://github.com/shaobeichen/dsh-pocket)** by shaobeichen, **GPL-2.0**, 3000+ stars. The LAN/public QR codes, access PINs, cloudflared tunnel, readiness self-heal and the proxy layer **all belong to upstream** — this project reimplements none of them.
 
-The LAN/public QR codes, access PINs, cloudflared tunnel, readiness self-heal and the proxy layer all come from upstream. This plugin is an **adapter**: it shows that same state in the dsh-go native UI and lets you drive it.
+This project does exactly one thing: **it gives upstream a remote-control panel on your phone.**
 
-- It contains **no upstream source code** — it only calls `POST /dsh-pocket/<endpoint>`
-- **dsh-pocket must be installed and enabled separately**; this plugin is a remote control, not a replacement
-- This plugin itself is MIT; merging upstream code into this repository makes the whole package GPL-2.0. See [NOTICE.md](NOTICE.md)
+| | Upstream dsh-pocket | This project dsh-go-pocket |
+| --- | --- | --- |
+| Job | Actually implements phone access | Displays and drives it in the native UI |
+| Installs into | the web plugin profile | `$DSH_HOME/dsh-go/plugins/` |
+| Required? | **Yes** — without it this plugin does nothing | Optional, but nicer |
+| Code relation | — | zero copies, zero imports, zero deps |
+| Talks via | — | HTTP `POST /dsh-pocket/<endpoint>` |
+| License | GPL-2.0 | MIT |
+
+**Three things worth knowing:**
+
+1. **dsh-pocket must be installed and enabled separately** (Phone access in the web settings). This project is a remote control, not a replacement; remove it and upstream keeps working untouched.
+2. **No upstream source code is included.** Measured code overlap is 1.31%, and `lib/view.js` plus `lib/words.js` are at 0% — the overlapping parts are generic idioms like `JSON.parse` and `content-type`, plus field names that reading the same `settings.json` makes unavoidable.
+3. **Why MIT is fine:** calling a separate program over HTTP is not a derivative work under the GPL. If anyone ever copies upstream code into this repository, **the whole package must become GPL-2.0**. That red line lives in [NOTICE.md](NOTICE.md).
+
+> Crediting upstream is about respect and honesty, not a GPL obligation. The QR codes, tunnel and self-heal are shaobeichen's work; this project just added a panel for them.
+
+Full licensing rationale, the measured overlap data and guidance for downstream users: **[NOTICE.md](NOTICE.md)**.
 
 ## Before you install
 
@@ -86,6 +113,26 @@ dsh-pocket mounts its control endpoints on the engine's own web server: `POST /d
 
 No copied PIN files, no fake endpoints, no cached config. The state always matches the web client, because it reads the same source.
 
+## Every web plugin suddenly returns 401
+
+**Symptom**: after installing or removing a plugin, updating DSH, or a cold app start, the web settings page shows "load failed" everywhere and every plugin endpoint returns 401 — even though it all worked before the restart.
+
+**Cause** (an upstream dsh-pocket auth flaw): its login cookie is `sha256(PIN:sessionKey)`, and `sessionKey` is a **per-process secret regenerated on every `dsh web` start**. So every engine restart invalidates every browser cookie — and because `isProtectedHost()` also treats loopback (`127.0.0.1`) as password-protected, your own machine gets locked out of its own engine with 401.
+
+**Fix**: make loopback password-free (it crosses no trust boundary — a process that can reach `127.0.0.1` is already on the device). LAN still honours the settings toggle, the public tunnel still requires its password, so the security model is unchanged.
+
+```sh
+# run inside the plugin directory; it locates $DSH_HOME/profiles/*/node_modules/dsh-pocket itself
+node bin/patch-loopback-noauth.mjs
+
+# inspect / revert
+node bin/patch-loopback-noauth.mjs --check
+node bin/patch-loopback-noauth.mjs --revert
+```
+
+Restart `dsh web` to take effect. If an upstream update replaces `proxy.mjs`, run it again — the script is idempotent and refuses to guess when the upstream code no longer matches.
+
+
 ## Uninstall
 
 ```sh
@@ -114,7 +161,12 @@ See [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Upstream dsh-pocket is GPL-2.0; this plugin contains none of its code and only calls its HTTP endpoints.
+| Subject | License | Note |
+| --- | --- | --- |
+| This project | **MIT** | See [LICENSE](LICENSE). Commercial use, modification and redistribution allowed with attribution |
+| Upstream dsh-pocket | **GPL-2.0** | Not included here, so no GPL conversion and no GPL text bundled |
+
+**One red line**: copying upstream code into this repository makes the whole package GPL-2.0. Rationale and measurements in [NOTICE.md](NOTICE.md).
 
 ---
 
